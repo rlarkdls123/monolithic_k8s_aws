@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-deployment
+  namespace: monitoring
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+
+  template:
+    metadata:
+      labels:
+        app: prometheus
+
+    spec:
+      
+      serviceAccountName: prometheus
+      containers:
+        - name: prometheus-container
+          image: prom/prometheus
+          # 해당 파일을 기반으로 node-exporter가  시스템 정보를 수집
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+          ports:
+          - containerPort: 9090
+
+          resources:
+            # 컨테이너가 사용할수 있는 리소스의 최대치
+            limits:
+              cpu: "1"
+              memory: "500Mi"
+            # 컨테이너가 시작될때 보장받아야 하는 최소 자원
+            requests:
+              cpu: "0.5"
+              memory: "250Mi"
+
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/prometheus
+      
+      volumes:
+        - name: config-volume
+          configMap:
+            name: prometheus-config
+---
+apiVersion: v1 
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: monitoring
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9090
+    targetPort: 9090
+  selector:
+    app: prometheus

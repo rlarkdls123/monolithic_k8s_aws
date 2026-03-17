@@ -3,23 +3,24 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress 
 metadata:
-  name: order-ingress
-  namespace: lgcns
+  name: grafana-ingress
+  namespace: monitoring
   annotations:
     # kubernetes.io/ingress.class: nginx 
     # nginx.ingress.kubernetes.io/rewrite-target: /$1
 
 spec:
-  tls:
-  - hosts:
-    - server.inspireseop2283.shop
-    # https 지정한 secret name과 동일한 이름
-    secretName: server-inspireseop2283-shop-tls
+
+  # tls:
+  # - hosts:
+  #   - grafana.inspireseop2283.shop
+  #   # https 지정한 secret name과 동일한 이름
+  #   secretName: grafana-inspireseop2283-shop-tls
 
   ingressClassName: nginx 
   rules:
     # 레코드로 등록한 도메인 이름 
-  - host: server.inspireseop2283.shop
+  - host: grafana.inspireseop2283.shop
     http:
       paths:
         # http://server.inspireseop2283.shop/
@@ -27,7 +28,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: order-service
+            name: grafana-service
             port:
               number: 80 
 

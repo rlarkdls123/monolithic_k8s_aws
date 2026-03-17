@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+
+# worker node에 pod(node-exporter) 자동으로 배포하기 위한 리소스 
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  namespace: monitoring
+
+spec:
+  selector:
+    matchLabels:
+      app: node-exporter
+
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+
+    spec:
+      # docker container 
+      containers:
+        - name: node-exporter
+          image: prom/node-exporter
+          ports:
+          - containerPort: 9100
+            hostPort: 9100
+          
+          # 해당 컨테이너 파드경로로 시스템 경로를 마운트 시킬 경로
+          volumeMounts:
+            - name: proc
+              mountPath: /host/proc
+              readOnly: true
+            - name: sys
+              mountPath: /host/sys
+              readOnly: true
+            - name: root
+              mountPath: /rootfs
+              readOnly: true
+      # ec2(woker node)의 시스템 경로    
+      volumes:
+        - name: proc
+          hostPath:
+            # CPU, Memory, Process 등의 실시간 정보를 제공 
+            path: /proc
+        - name: sys
+          hostPath:
+            # 커널상태, 디바이스, 하드웨어 정보를 제공
+            path: /sys
+        - name: root
+          hostPath:
+            # 디스크 용량 정보를 제공
+            path: /
+
